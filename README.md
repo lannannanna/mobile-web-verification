@@ -2,7 +2,7 @@
 
 ## Preconditions
 
-- You have a mobile web application that allow users to sign up /sign in / verify using mobile number to use your services
+- You have a mobile web application that allows users to sign up /sign in / verify using mobile number to use your services
 - You have identified the benefits that Truecaller can provide you, by allowing your users one click sign up / verification / checkout using their already verified Truecaller profile
 - You have set up a callback endpoint on your server, that we will use to post the access token, once the user has approved your app to use their Truecaller verified profile
 - This documentation to efficiently pass through all the steps of the process.
@@ -11,7 +11,7 @@
 
 ### Already a Truecaller Developer?
 
-- Login to your account to create a new app. Add your App Name and the Callback URL, where we'll post your access token. Make sure you follow the [guidelines for the Callback URL](#guidelines-for-the-callback-url).
+- Login to your account to create a new app. Add your App Name and the Callback URL, where we'll post your access token. Make sure you follow the [guidelines for the Callback URL](#guidelines-for-the-callback-url). In case you already have a key for using web sign in for your app, you can use that for both the Web and mobile-web sign in flow (creating a new app is not necessary).
 - Once we've got the info about your account and your app, we will provide you with a unique "appKey" for that application. You'll use this key in the header, for us to be able to authorize your requests.
 
 ### New to Truecaller Devs?
@@ -31,16 +31,16 @@ This is how it looks in a glance:
 
 But let's get down to the details.
 
-### Initiate the user verification flow
+### Initiate the user sign up flow
 
-To initiate the user verification, you need to trigger a deep link in the format mentioned below. You can initiate the user verification at multiple touch points in your user flow journey ( for exmple - login, registration, checkout, verification etc. )
+To initiate the user sign up, you need to trigger a deep link in the format mentioned below. You can initiate the user sign up at multiple touch points in your user flow journey ( for exmple - login, registration, checkout, verification etc. )
 
 ```java
 "truecallersdk://truesdk/web_verify?requestNonce=UNIQUE_REQUEST_ID&partnerKey=YOUR_APP_KEY&partnerName=YOUR_APP_NAME&lang=LANGUAGE_LOCALE&title=TITLE_STRING_OPTION"
 ```
 
-Here, requestNonce should be a unique requestID that you need to associate with every verification request you trigger, so as to do the requisite mapping of the access token which we post to your callback URL once the user shares his / her consent.
-Add the partner key which you generated from your developer portal account, and the app name that you want users to see in the truecaller profile dialog.
+Here, requestNonce should be a unique requestID that you need to associate with every verification request you trigger, so as to do the required mapping of the access token which we post to your callback URL once the user shares his / her consent.
+Add the app key which you generated from your developer portal account, and the app name that you want users to see in the truecaller profile dialog.
 The language locale needs to be the locale string corresponding to the language that you wish the user to see the profile dialog in ( For example - 'en' for English ). Currently supported languages include -
 
      - English
@@ -88,7 +88,7 @@ setTimeout(function(){
 },200)
 ```
 
-This would open the deeplink in a new window, and open the user's Truecaller profile if the app is present on the device. And in case the app is not present, then the new blank window will stay. Using javascript timeout function, you can immediately close the window after a certain timeout ( say 200 milliseconds, so that JS can appropriately detect in case the overlay opened or the blank window, by using the code snippet as above ) and redirect the user to your alternate OTP flow.
+This would open the deeplink in a new window, and open the user's Truecaller profile if the app is present on the device. And in case the app is not present, then the new blank window will stay open. Using javascript timeout function, you can immediately close the window after a certain timeout (say 200 milliseconds, so that JS can appropriately detect in case the overlay opened or the blank window, by using the code snippet as above ) and redirect the user to your alternative OTP flow.
  
 
 ### Fetch User Profile
@@ -96,13 +96,13 @@ This would open the deeplink in a new window, and open the user's Truecaller pro
 Once the user approves the sign up to your app with their Truecaller profile, we'll immediately post the accessToken and the requestID to your Callback endpoint. The sample response format would look like below -
 
 ```java
-{"requestId":"RL8YZ41FQMt5Jiak2sc_Ys0OgQA=","accessToken":"a1asX--8_yw-OF--E6Gj_DPyKelJIGUUeYB9U9MJhyeu4hOCbrl","endpoint":"https://profile4-noneu.truecaller.com/v1/default"}
+{"requestId":"RL8YZ41FQMt5Jiak2sc_Ys0OgQA=","accessToken":"a1asX--8_yw-OF--E6Gj_DPyKelJIGUUeYB9U9MJhyeu4hOCbrl","endpoint":"https://profile.truecaller.com/v1/default"}
 ```
 
 To be able to fetch the user's profile information you should use the following endpoint.
 
 **Endpoint:**  
-Use the endpoint that you receive in the above response ( once the user shares his truecaller profile ) to fetch the user profile.
+Use the endpoint that you receive in the above response (once the user shares their truecaller profile) to fetch the user profile.
 
 **Header Authorization Parameters:**  
 
@@ -112,7 +112,7 @@ Use the endpoint that you receive in the above response ( once the user shares h
 
 **Get User Profile**  
 ```bash
-curl -X GET -H "Authorization: Bearer a3sAB0KnGANg4VZwIXfhUyFmPbzoONofl4FjIItac0JQSODp6niW8oBr33uOI-u7" -H "Cache-Control: no-cache" "https://profile4-noneu.truecaller.com/v1/default"
+curl -X GET -H "Authorization: Bearer a3sAB0KnGANg4VZwIXfhUyFmPbzoONofl4FjIItac0JQSODp6niW8oBr33uOI-u7" -H "Cache-Control: no-cache" "https://profile.truecaller.com/v1/default"
 ```
 
 **Sample User Profile Response**
@@ -163,7 +163,7 @@ curl -X GET -H "Authorization: Bearer a3sAB0KnGANg4VZwIXfhUyFmPbzoONofl4FjIItac0
 - 401 Unauthorized - **If your credentials are not valid**
 - 5xx Server error - **Any other error**
 
-Please note, in case the user doesn't shares his truecaller profile ( user dismissed the profile dialog by pressing the back button ), you'll receive a user reject error response on your callback endpoint. The sample format for the same would look as below -
+Please note, in case the user doesn't shares their truecaller profile (user dismissed the profile dialog by pressing the back button), we will post a 'user_rejected' message to your callback endpoint with the relevant requestId. The sample format for the same would look as below -
 
 ```java
 {"requestId":"WZqlS6PqY0ycO3mKlEuI=","status":"user_rejected"}
@@ -182,11 +182,14 @@ All access token requests will be submitted as POST request. Make sure your serv
 To ensure security and privacy, HTTPS should be used. Make sure your certificate is always valid.
 
 **Request Params:**
+Json Body:
 
 | **Param [String]**   | **Mandatory** | **Description**                                                                      | **Example value**                                                 |
 | -------------------- | ------------- | ------------------------------------------------------------------------------------ | ----------------------------------------------------------------- |
 | requestId [String]   | yes           |                                                                                      | vXbyFPwqiCAHZyxAldA9M9DDXKk=                                      |
 | accessToken [String] | yes           |                                                                                      | a3sAB0KnGANg4VZwIXfhUyFmPbzoONofl4FjIItac0JQSODp6niW8oBr33uOI-u7  |
+| endpoint [String] | no           |                                                                                      | https://profile.truecaller.com/v1/default  |
+
 
 **Expected Response Codes:**
 
